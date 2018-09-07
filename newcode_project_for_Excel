@@ -1,0 +1,237 @@
+Imports Excel = Microsoft.Office.Interop.Excel
+Imports Word = Microsoft.Office.Interop.Word
+Imports Outlook = Microsoft.Office.Interop.Outlook
+Imports System.Net.Mail
+Imports System.IO
+Imports System.Windows.Forms
+Imports System.Threading
+
+
+Public Class Form2
+
+
+    Dim var As String
+    Dim myexcel As New Excel.Application
+    Dim wd As New Word.Application
+
+    Dim wddoc As New Word.Document
+    Dim mytable As Word.Table
+    Dim Filepath, Filename As String
+    Dim OutApp, outmail As Object
+    Private Sub BtnSelectItem_Click(sender As Object, e As EventArgs) Handles BtnSelectItem.Click
+        Dim myrange As Excel.Range
+        Dim ws As Excel.Worksheet
+        Dim wdtable As Word.Table
+        wd.Visible = True
+        wd.Activate()
+        myexcel.Workbooks.Open("C:\Users\goodwill\databasd.xlsx")
+         
+        myexcel.Visible = False
+        For Each ws In myexcel.Worksheets
+
+            If CBSelecttext.Text = ws.Name Then
+                ws.Select()
+                var = ws.Name
+                If var = "NE" Then
+                    myrange = myexcel.Range("A1:K43")
+                    myrange.Copy()
+                    wddoc = wd.Documents.Add
+                    wddoc.Range.PasteSpecial(Link:=True, DisplayAsIcon:=False)
+                    wdtable = wddoc.Tables(1)
+                    wdtable.Select()
+                    wdtable.AutoFitBehavior(Word.WdAutoFitBehavior.wdAutoFitWindow)
+                    wddoc.SaveAs2("C:\Users\goodwill\" & var & ".docx")
+                     ElseIf var = "VI" Then
+                    myrange = myexcel.Range("A1:K43")
+                    myrange.Copy()
+                    wddoc = wd.Documents.Add
+                    wddoc.Range.PasteSpecial(Link:=True, DisplayAsIcon:=False)
+                    wdtable = wddoc.Tables(1)
+                    wdtable.Select()
+                    wdtable.AutoFitBehavior(Word.WdAutoFitBehavior.wdAutoFitWindow)
+                    wddoc.SaveAs2("C:\Users\goodwill\" & var & ".docx")
+                    
+                    
+                        End If
+        Next ws
+
+    End Sub
+    
+    
+    Private Sub CmdOpenfile_Click(sender As Object, e As EventArgs) Handles CmdOpenfile.Click
+        OpenFileDialog1.Filter = " Word File  |*.docx"
+        If OpenFileDialog1.ShowDialog = DialogResult.OK Then
+            ListBox1.Items.Add(Path.GetFileNameWithoutExtension(OpenFileDialog1.FileName))
+            'ListBox1.Items.add
+            '  OpenFileDialog1.FileNames.Count()
+            '   For x = 0 To OpenFileDialog1.FileNames.Count() - 1
+            'ListBox1.Items.Add(FilePath.Remove)
+            'ListBox1.Items.Add(OpenFileDialog1.FileNames(x))
+            '  Next     
+        End If
+                    
+                     End If
+    End Sub
+
+    Private Sub cmdemailsend_Click(sender As Object, e As EventArgs) Handles cmdemailsend.Click
+        Dim outlookapp As New Outlook.Application
+        Dim outlookmail As New Object
+        Dim shXL As Excel.Worksheet = Nothing
+        Dim appXL As Excel.Application = Nothing
+        Dim wbXL As Excel.Workbook = Nothing
+        Dim wbsXL As Excel.Workbooks = Nothing
+        Dim xRng As Excel.Range
+        Dim x As Integer
+        Dim val As Object
+        appXL = CreateObject("excel.application")
+        myexcel.Workbooks.Open("C:\Users\goodwill\databasd.xlsx")
+       
+        For Each shXL In myexcel.Worksheets
+            If ListBox1.Items.Contains(shXL.Name) Then
+                shXL.Select()
+                var = shXL.Name
+                If var = "NE" Then
+                    outlookapp = CreateObject("outlook.application")
+                    outlookmail = outlookapp.CreateItem(0)
+                    Filepath = "C:\Users\goodwill\"
+                    If ListBox1.Items.Contains(var) Then
+                        ListBox1.MultiColumn = True
+                        For x = 2 To 11
+                            xRng = CType(shXL.Cells(x, 20), Excel.Range)
+                            val = xRng.Value()
+                            Filename = Dir(Filepath & var & "*.*")
+                            With outlookmail
+                                .To = val
+                                .CC = ""
+                                .BCC = ""
+                                .Subject = "Please Ignore this email as it is for the purpose of Testing"
+                                .attachments.add(Filepath & Filename)
+                                .send()
+                                '.display()
+                            End With
+                            '  x = x + 1
+                        Next
+                        x = x + 1
+                    End If
+                ElseIf var = "VI" Then
+                         
+
+                   
+                    If ListBox1.Items.Contains(var) Then
+                        '  ListBox1.MultiColumn = True
+                        For x = 6 To 6
+                            outlookapp = CreateObject("outlook.application")
+                            outlookmail = outlookapp.CreateItem(0)
+                            Filepath = "C:\Users\goodwill\"
+                            xRng = CType(shXL.Cells(x, 20), Excel.Range)
+                            val = xRng.Value()
+                            Filename = Dir(Filepath & var & "*.*")
+                            With outlookmail
+                                .To = val
+                                                               .Bcc = ""
+                                .Subject = "Please Ignore this email as it is for the purpose of Testing"
+                                .attachments.add(Filepath & Filename)
+                                '.send()
+                                .display()
+                            End With
+                        Next
+                        x = x + 1
+                    End If  
+                      End If
+        Next
+    End Sub
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    Private Sub cmdreset_Click(sender As Object, e As EventArgs) Handles cmdreset.Click
+        ListBox1.Items.Clear()
+    End Sub
+
+    Private Sub CmdBExit_Click(sender As Object, e As EventArgs) Handles CmdBExit.Click
+        '  wd.Visible = False
+        '  myexcel.SaveWorkspace()
+        Dim myprocess() As Process = System.Diagnostics.Process.GetProcessesByName("EXCEL")
+        Dim MYPROCESS1() As Process = System.Diagnostics.Process.GetProcessesByName("WINWORD")
+        For Each mykill As Process In myprocess
+            mykill.Kill()
+
+            myexcel = Nothing
+        Next
+        '       myexcel.Visible = False
+        ' For Each mykill1 As Process In MYPROCESS1
+        'mykill1.Kill()
+        ' Next
+
+
+        ' myexcel.Quit()
+      
+        '  myexcel.Quit()
+
+        '   ws.visible = False
+
+
+        For Each mykill1 As Process In MYPROCESS1
+            mykill1.Kill()
+        Next
+
+        '  wd.Quit()
+        ' wd.Visible = False
+        'wd.Visible = False
+        wd = Nothing
+        Close()
+    End Sub
+
+    Private Sub Cmdmovefl_Click(sender As Object, e As EventArgs) Handles Cmdmovefl.Click
+        IO.File.Move(txtactive.Text, txtflocation.Text)
+        MsgBox("File has been moved")
+    End Sub
+
+    Private Sub Cmdsearchfl_Click(sender As Object, e As EventArgs) Handles Cmdsearchfl.Click
+        OpenFileDialog1.Filter = "Word File|*.docx"
+        If OpenFileDialog1.ShowDialog = DialogResult.OK Then
+            txtactive.Text = (OpenFileDialog1.FileName)
+            
+        End If
+    End Sub
+
+    Private Sub ListBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ListBox1.SelectedIndexChanged
+        ListBox1.Items.Remove(ListBox1.Text)
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        System.Threading.Thread.Sleep(3000)
+    End Sub
+
+    Private Sub CBSelecttext_SelectedIndexChanged(sender As Object, e As EventArgs) Handles CBSelecttext.SelectedIndexChanged
+        ListBox1.Items.Add(CBSelecttext.Text)
+    End Sub
+
+
+
+    Private Sub Form2_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        myexcel.Quit()
+
+        '  wd.Quit()
+        CBSelecttext.Items.Add("VI")
+        CBSelecttext.Items.Add("CX")
+        CBSelecttext.Items.Add("CX")
+        CBSelecttext.Items.Add("CI")
+        CBSelecttext.Items.Add("CO")
+
+
+    End Sub
+
+
+End Class
+                    
+                    
+                    
+                    
+                    
+                    
